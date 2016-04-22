@@ -20,13 +20,21 @@ Puppet::Type.newtype(:pulp_repo) do
   end
 
   newparam(:id) do
-    desc "uniquely identifies the consumer; only alphanumeric, ., -, and _ allowed"
+    desc "uniquely identifies the repo; only alphanumeric, ., -, and _ allowed"
     isnamevar
   end
 
   newparam(:server) do
     desc "url of the server like https://pulp.repo"
-    isnamevar
+    #use environment variable set the parameter
+    defaultto ENV['PULP_SERVER']
+
+    validate do |value|
+      unless URI.parse(value).is_a?(URI::HTTP) ||
+        URI.parse(value).is_a?(URI::HTTPS)
+        fail("Invalid feed #{value}")
+      end
+    end
   end
 
   newparam(:api_path) do
@@ -51,7 +59,6 @@ Puppet::Type.newtype(:pulp_repo) do
 
   newproperty(:feed) do
   	desc "Feed for the repository"
-
   	validate do |value|
   		unless URI.parse(value).is_a?(URI::HTTP) ||
   			URI.parse(value).is_a?(URI::HTTPS) ||
@@ -63,17 +70,15 @@ Puppet::Type.newtype(:pulp_repo) do
 
   newproperty(:server_http) do
   	desc "Server through http"
-  	newvalue(:true)
-  	newvalue(:false)
-
-  	defaultto :true
+  	newvalues(:true :false)
+    #pulp default value
+  	defaultto :false
   end
 
   newproperty(:server_https) do
   	desc "Server through http"
-  	newvalue(:true)
-  	newvalue(:false)
-
+  	newvalues(:true, :false)
+    #pulp default value
   	defaultto :true
   end
 

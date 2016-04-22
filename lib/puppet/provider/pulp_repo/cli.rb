@@ -1,6 +1,9 @@
 require 'json'
-Puppet::Type.type(:pulp_repo).provide(:repo) do
-  desc "Manage pulp repo"
+require 'puppet
+'
+Puppet::Type.type(:pulp_repo).provide(:cli) do
+
+  desc "Manage pulp repo with command line utilities"
   commands :pulpadmin => 'pulp-admin'
   commands :curl => 'curl'
 
@@ -14,7 +17,7 @@ Puppet::Type.type(:pulp_repo).provide(:repo) do
 
   def self.instances
   	repos =[]
-  	execpipe("#{curl} -k --cert ~/.pulp/user-cert.pem #{@resource[:server]}/#{@resources[:api_path]}/repositories/?details=true") do |output|
+  	execpipe([command(:curl),  '-k', '--cert' , '~/.pulp/user-cert.pem',  "#{@resource[:server]}/#{@resources[:api_path]}/repositories/?details=true"]) do |output|
 	  	repo_raw_json= JSON.parse(output)
 	  	#An array returned
 	  	repo_json = repo_raw_json[0]
@@ -137,7 +140,7 @@ Puppet::Type.type(:pulp_repo).provide(:repo) do
   #user=
   #pass=
   def login_get_cert
-  	 execoutput("pulp-admin login")
+  	 execoutput([command(:pulpadmin), 'login'])
   rescue Puppet::ExecutionFailure => details
   	raise Puppet::Error, "Check ~/.pulp/admin.conf for credentials, could not log in with pulpadmin: #{detail}"
   end
