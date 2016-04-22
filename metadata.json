@@ -1,0 +1,41 @@
+{
+  "name": "entertainment-profiles",
+  "version": "0.1.0",
+  "author": "entertainment",
+  "summary": "Entertainment Puppet Profiles",
+  "license": "Apache-2.0",
+  "source": "ssh://git@stash.entertainment.com:7999/pm/entertainment-profiles.git",
+  "project_page": "https://stash.entertainment.com/projects/PM/repos/entertainment-profiles/browse",
+  "issues_url": "https://project.entertainment.com/jira4",
+  "dependencies": [
+    {
+      "name": "puppetlabs/stdlib",
+      "version_requirement": ">= 4.3.2"
+    },
+    {
+      "name": "puppetlabs/concat",
+      "version_requirement": ">= 1.1.2"
+    },
+    {
+      "name": "puppetlabs/apache",
+      "version_requirement": ">= 1.1.1"
+    },
+    {
+      "name": "puppetlabs/ntp",
+      "version_requirement": ">= 3.2.0"
+    },
+    {
+      "name": "pdxcat/collectd",
+      "version_requirement": ">= 3.0.1"
+    }
+  ],
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "6",
+        "7"
+      ]
+    }
+  ]
+}
