@@ -1,7 +1,8 @@
 require 'json'
 require 'puppet'
-require 'inifile'
 require 'openssl'
+require 'puppet/util/inifile'
+
 Puppet::Type.type(:pulp_repo).provide(:cli) do
 
   desc "Manage pulp repo with command line utilities"
@@ -162,11 +163,14 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
 
   def get_auth_credetials
     admin_conf=File.expand_path("~/.pulp/admin.conf")
-    admin_ini = IniFile.load(admin_conf)
-    if !admin_ini['auth'] || admin_ini['auth'].empty?
-      raise Puppet::Error, "Check ~/.pulp/admin.conf for auth config"
-      admin_ini['auth']
+    admin_ini = Puppet::Util::IniConfig::PhysicalFilenew(admin_conf)
+    admin_ini.read
+    if (auth = admin_ini.get_section['auth'])
+      if auth.empty?
+       raise Puppet::Error, "Check ~/.pulp/admin.conf for auth config"
     end
+    auth
+  end
 
     def is_cert_valid?
       unless @date_after
