@@ -1,6 +1,7 @@
 require 'json'
-require 'puppet
-'
+require 'puppet'
+require 'inifile'
+require 'openssl'
 Puppet::Type.type(:pulp_repo).provide(:cli) do
 
   desc "Manage pulp repo with command line utilities"
@@ -137,12 +138,39 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
   end
   #assume user have ~/.pulp/admin setup with auth username and password
   #[auth]
-  #user=
-  #pass=
+  #username:
+  #password:
   def login_get_cert
-  	 execoutput([command(:pulpadmin), 'login'])
+     credentials = get_auth_credetials
+     unless is_cert_valid?
+  	  execoutput([command(:pulpadmin), 'login', '-u', credentials['username'], '-p', credentials['password']])
   rescue Puppet::ExecutionFailure => details
   	raise Puppet::Error, "Check ~/.pulp/admin.conf for credentials, could not log in with pulpadmin: #{detail}"
+  end
+
+  def get_auth_credetials
+    admin_conf=File.expand_path("~/.pulp/admin.conf")
+    admin_ini = IniFile.load(admin_conf)
+    if !admin_ini['auth'] || admin_ini['auth'].empty?
+      raise Puppet::Error, "Check ~/.pulp/admin.conf for auth config"
+    admin_ini['auth']
+  end
+
+  def is_cert_valid?
+    cert_path = File.expand_path("~/.pulp/user-cert.pem")
+    if !File.exsit?(cert_path)
+      return false
+    end
+    raw_cert = File.read cert_path
+    cert_file = OpenSSL::X509::Certificate.new raw_cert
+
+    date_after = cert_file.not_after
+    date_before = cert_file.not_before
+    current_time = Time.now
+    if current_time.to_i < date_after.to_i - 600 && current_time.to_i > date_before.to_i
+      return true
+    else
+      return false
   end
 
 end

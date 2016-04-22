@@ -49,4 +49,6 @@ else
   gem 'puppet', '~> 3.8.0', :require => false
 end
 
+gem 'inifile', '~> 3.0'
+
 # vim:ft=ruby
