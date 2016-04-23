@@ -27,7 +27,7 @@ Puppet::Type.newtype(:pulp_repo) do
   newparam(:server) do
     desc "url of the server like https://pulp.repo"
     #use environment variable set the parameter
-    defaultto ENV['PULP_SERVER']
+    defaultto ENV['PULP_SERVER'] || 'https://localhost.epi.local'
 
     validate do |value|
       unless URI.parse(value).is_a?(URI::HTTP) ||
@@ -44,17 +44,17 @@ Puppet::Type.newtype(:pulp_repo) do
 
   newparam(:type) do
   	newvalues(:rpm, :puppet)
-  	defautlto :rpm
+  	defaultto :rpm
   end
 
   newproperty(:name) do
   	desc "Display name for repo"
-  	default to :id
+  	defaultto :id
   end
 
   newproperty(:description) do
   	desc "Description of the repository"
-  	default to ''
+  	defaultto ''
   end
 
   newproperty(:feed) do
@@ -70,7 +70,7 @@ Puppet::Type.newtype(:pulp_repo) do
 
   newproperty(:server_http) do
   	desc "Server through http"
-  	newvalues(:true :false)
+  	newvalues(:true,:false)
     #pulp default value
   	defaultto :false
   end

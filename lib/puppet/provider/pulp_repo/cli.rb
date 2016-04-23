@@ -15,7 +15,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
     #login fetch user certificate
     login_get_cert
   end
-  mk_resources_methods
+  mk_resource_methods
 
   def self.instances
     login_get_cert
@@ -65,7 +65,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
     end
   end
 
-  def exsits?
+  def exists?
     @property_hash[:ensure] == :present
   end
 
@@ -89,23 +89,23 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
   end
 
   def name=(value)
-    @property_flush(:name) = value
+    @property_flush[:name] = value
   end
 
   def description=(value)
-    @property_flush(:description) = value
+    @property_flush[:description] = value
   end
 
   def feed=(value)
-    @property_flush(:feed) = value
+    @property_flush[:feed] = value
   end
 
   def serve_http=(value)
-    @property_flush(:serve_http) = value
+    @property_flush[:serve_http] = value
   end
 
   def serve_https=(value)
-    @property_flush(:serve_https) = value
+    @property_flush[:serve_https] = value
   end
 
   def flush
@@ -122,8 +122,6 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
       execoutput(repo_update_cmd(options))
     end
   end
-
-  private
 
   def repo_create_cmd()
     repo_create=[command(:pulpadmin), "#{@resources[:type]}", "repo", "create" , "--repo-id", "#{@resources[:id]}" ]
@@ -163,31 +161,36 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
 
   def get_auth_credetials
     admin_conf=File.expand_path("~/.pulp/admin.conf")
-    admin_ini = Puppet::Util::IniConfig::PhysicalFilenew(admin_conf)
+    admin_ini = Puppet::Util::IniConfig::PhysicalFile.new(admin_conf)
     admin_ini.read
-    if (auth = admin_ini.get_section['auth'])
-      if auth.empty?
-       raise Puppet::Error, "Check ~/.pulp/admin.conf for auth config"
+    cred ={}
+    if (auth = admin_ini.get_section('auth'))
+      if auth.entriesempty?
+        raise Puppet::Error, "Check ~/.pulp/admin.conf for auth config"
+      end
+      cred['username'] = auth['username']
+      cred['password'] = auth['password']
     end
-    auth
+    cred
   end
 
-    def is_cert_valid?
-      unless @date_after
-        cert_path = File.expand_path("~/.pulp/user-cert.pem")
-        if !File.exsit?(cert_path)
-          return false
-        end
-        raw_cert = File.read cert_path
-        cert_file = OpenSSL::X509::Certificate.new raw_cert
-        @date_after = cert_file.not_after
-        @date_before = cert_file.not_before
-      end
-      current_time = Time.now
-      if current_time.to_i < @date_after.to_i - 600 && current_time.to_i > @date_before.to_i
-        return true
-      else
+  def is_cert_valid?
+    unless @date_after
+      cert_path = File.expand_path("~/.pulp/user-cert.pem")
+      if !File.exist?(cert_path)
         return false
       end
-
+      raw_cert = File.read cert_path
+      cert_file = OpenSSL::X509::Certificate.new raw_cert
+      @date_after = cert_file.not_after
+      @date_before = cert_file.not_before
     end
+    current_time = Time.now
+    if current_time.to_i < @date_after.to_i - 600 && current_time.to_i > @date_before.to_i
+      return true
+    else
+      return false
+    end
+
+  end
+end
