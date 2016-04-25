@@ -119,7 +119,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
     execute(repo_create_cmd)
     @property_hash[:ensure] = :present
   rescue Puppet::ExecutionFailure => details
-    raise Puppet::Error, "Cannot create repo : #{repo_create_cmd.join(' ')}"
+    raise Puppet::Error, "Cannot create repo : #{repo_create_cmd.join(' ')}, details: #details"
   end
 
   def destroy
@@ -178,10 +178,10 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
       repo_create = repo_create + ["--feed", wrap_with_quote(self.resource['feed'])]
     end
     if self.resource['serve_http']
-      repo_create = repo_create + ["--serve-http", wrap_with_quote(self.resource['serve_http'])]
+      repo_create = repo_create + ["--serve-http", self.resource['serve_http']]
     end
     if self.resource['serve_https']
-      repo_create = repo_create + ["--serve-https", wrap_with_quote(self.resource['serve_https'])]
+      repo_create = repo_create + ["--serve-https", self.resource['serve_https']]
     end
     repo_create << "--display_name" <<  wrap_with_quote(self.resource['display_name']) if self.resource['display_name']
     repo_create << "--description" << wrap_with_quote(self.resource['description']) if self.resource['description']
