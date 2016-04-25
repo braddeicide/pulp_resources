@@ -24,24 +24,6 @@ Puppet::Type.newtype(:pulp_repo) do
     isnamevar
   end
 
-  newparam(:server) do
-    desc "url of the server like https://pulp.repo"
-    #use environment variable set the parameter
-    defaultto ENV['PULP_SERVER'] || 'https://localhost.epi.local'
-
-    validate do |value|
-      unless URI.parse(value).is_a?(URI::HTTP) ||
-        URI.parse(value).is_a?(URI::HTTPS)
-        fail("Invalid feed #{value}")
-      end
-    end
-  end
-
-  newparam(:api_path) do
-  	desc "api path"
-  	defaultto "pulp/api/v2"
-  end
-
   newparam(:type) do
   	newvalues(:rpm, :puppet)
   	defaultto :rpm
