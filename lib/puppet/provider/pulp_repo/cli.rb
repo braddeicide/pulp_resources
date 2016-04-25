@@ -47,13 +47,39 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
       if repo['distributors']
         repo['distributors'].each do |distributor|
           if distributor['distributor_type_id'] == 'yum_distributor'
-            data_hash[:server_http] = distributor['config']['http']
-            data_hash[:server_https] = distributor['config']['https']
+            if distributor['config']['http']
+              data_hash[:server_http] = true
+            else
+              data_hash[:server_http] = false
+            end
+            Puppet.debug("serve_https: #{distributor['config']['https']}" )
+            if distributor['config']['https']
+              data_hash[:server_https] = true
+            else
+              Puppet.debug("set serve_https to false")
+              data_hash[:server_https] = false
+            end
           end
+        end
+      end
+      if !repo['notes'].empty?
+
+        repo_type = repo['notes']['_repo-type']
+        Puppet.debug("repo type : #{repo['notes'].to_json}")
+        if repo_type.match('rpm')
+          data_hash[:type] = 'rpm'
+        end
+        if repo_type.match('puppet')
+          data_hash[:type] = 'puppet'
+        end
+        if repo_type.match('docker')
+          data_hash[:type] = 'docker'
         end
       end
       data_hash[:provider] = self.name
       data_hash[:ensure] = :present
+
+
       Puppet.debug("data_hash #{data_hash.to_json}")
       # prov=new(
       #   :id => data_hash[:id],
@@ -122,18 +148,22 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
   end
 
   def flush
-    Puppet.debug("flush method")
+    Puppet.debug("flush method, existing resource is #{resource}")
     options=[]
     if @property_flush
-      options << '--display-name' << @resources[:name] if @property_flush[:name]
-      options << '--discription' << @resources[:description] if @property_flush[:description]
-      options << '--feed' << @resources[:feed] if @property_flush[:feed]
-      options << '--serve-http' << @resources[:serve_http] if @property_flush[:serve_https]
-      options << '--serve-https' << @resources[:serve_http] if @property_flush[:serve_https]
+      options << '--display-name' <<  @property_flush[:display_name] if @property_flush[:display_name]
+      options << '--discription' << @property_flush[:description] if @property_flush[:description]
+      options << '--feed' <<  @property_flush[:feed] if @property_flush[:feed]
+      options << '--serve-http' <<  @property_flush[:serve_https] if @property_flush[:server_https]
+      options << '--serve-https' <<  @property_flush[:serve_https] if  @property_flush[:sever_http]
     end
+    Puppet.debug("flush with command options :#{options.join(' ')}")
     unless options.empty?
-      login_get_cert
-      execute(repo_update_cmd(options))
+      self.class.login_get_cert
+      Puppet.debug("finish cert check")
+      cmd=repo_update_cmd(options)
+      Puppet.debug("repo update cmd :#{cmd}")
+      execute(cmd)
     end
   end
 
@@ -156,7 +186,8 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
   end
 
   def repo_update_cmd(options)
-    [command(:pulpadmin), @resources[:type], "repo", "update","--bg", "--repo-id", @resources[:id] ]+options
+    Puppet.debug("type :#{@property_hash}")
+    [command(:pulpadmin), @property_hash[:type], "repo", "update","--bg", "--repo-id", @property_hash[:id] ]+options
   end
   #assume user have ~/.pulp/admin setup with auth username and password
   #[auth]

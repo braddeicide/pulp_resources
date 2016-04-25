@@ -25,6 +25,7 @@ Puppet::Type.newtype(:pulp_repo) do
   end
 
   newparam(:type) do
+    desc "Type of repo"
   	newvalues(:rpm, :puppet)
   	defaultto :rpm
   end
