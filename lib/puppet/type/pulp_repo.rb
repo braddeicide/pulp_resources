@@ -29,9 +29,8 @@ Puppet::Type.newtype(:pulp_repo) do
   	defaultto :rpm
   end
 
-  newproperty(:name) do
+  newproperty(:display_name) do
   	desc "Display name for repo"
-  	defaultto :id
   end
 
   newproperty(:description) do

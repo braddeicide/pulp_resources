@@ -12,8 +12,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
   def initialize(value={})
     super(value)
     @property_flush = {}
-    #login fetch user certificate
-    login_get_cert
+
   end
   mk_resource_methods
 
@@ -32,8 +31,9 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
     repo_json.each do |repo|
       Puppet.debug("repo : #{repo.to_json}")
       data_hash ={}
+      data_hash[:name] =repo['id']
       data_hash[:id] = repo['id']
-      data_hash[:name] = repo['display_name']
+      data_hash[:display_name] = repo['display_name']
       data_hash[:description] = repo['description']
       Puppet.debug("check importers")
       if repo['importers']
@@ -52,9 +52,18 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
           end
         end
       end
-      data_hash[:ensure] = 'present'
       data_hash[:provider] = self.name
-      repos << data_hash unless data_hash.empty?
+      data_hash[:ensure] = :present
+      Puppet.debug("data_hash #{data_hash.to_json}")
+      # prov=new(
+      #   :id => data_hash[:id],
+      #   :display_name => data_hash[:display_name],
+      #   :description => data_hash[:description],
+      #   :serve_http => data_hash[:serve_http],
+      #   :serve_https => data_hash[:serve_https],
+      #   :ensure => :present
+      # )
+      repos << new(data_hash) unless data_hash.empty?
     end
     Puppet.debug("repos : #{repos.to_json}")
     repos
@@ -65,10 +74,10 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
   def self.prefetch(repos)
     Puppet.debug("prefetch #{repos}")
     instances.each do |prov|
-      Puppet.debug("prov name : #{prov}")
-      if r = repos[prov.name]
-        r.provider = prov
-      end
+       Puppet.debug("prov name : #{prov}")
+       if r = repos[prov.name]
+         r.provider = prov
+       end
     end
   end
 
@@ -92,8 +101,8 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
     raise Puppet::Error, "Cannot delete repo : #{repo_delet_cmd}"
   end
 
-  def name=(value)
-    @property_flush[:name] = value
+  def display_name=(value)
+    @property_flush[:display_name] = value
   end
 
   def description=(value)
