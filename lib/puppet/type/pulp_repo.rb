@@ -50,14 +50,14 @@ Puppet::Type.newtype(:pulp_repo) do
   	end
   end
 
-  newproperty(:server_http) do
+  newproperty(:serve_http) do
   	desc "Server through http"
   	newvalues(:true,:false)
     #pulp default value
   	defaultto :false
   end
 
-  newproperty(:server_https) do
+  newproperty(:serve_https) do
   	desc "Server through http"
   	newvalues(:true, :false)
     #pulp default value

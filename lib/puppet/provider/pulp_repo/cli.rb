@@ -48,16 +48,16 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
         repo['distributors'].each do |distributor|
           if distributor['distributor_type_id'] == 'yum_distributor'
             if distributor['config']['http']
-              data_hash[:server_http] = true
+              data_hash[:serve_http] = :true
             else
-              data_hash[:server_http] = false
+              data_hash[:serve_http] = :false
             end
             Puppet.debug("serve_https: #{distributor['config']['https']}" )
             if distributor['config']['https']
-              data_hash[:server_https] = true
+              data_hash[:serve_https] = :true
             else
               Puppet.debug("set serve_https to false")
-              data_hash[:server_https] = false
+              data_hash[:serve_https] = :false
             end
           end
         end
@@ -112,11 +112,13 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
   end
 
   def create
-    login_get_cert
+    Puppet.debug("Invoking create command #{self.resource.to_s}")
+    self.class.login_get_cert
+    Puppet.debug("create with cmd: #{repo_create_cmd.join(' ')}")
     execute(repo_create_cmd)
     @property_hash[:ensure] = :present
   rescue Puppet::ExecutionFailure => details
-    raise Puppet::Error, "Cannot create repo : #{repo_create_cmd}"
+    raise Puppet::Error, "Cannot create repo : #{repo_create_cmd.join(' ')}"
   end
 
   def destroy
@@ -154,7 +156,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
       options << '--display-name' <<  wrap_with_quote(@property_flush[:display_name]) if @property_flush[:display_name]
       options << '--description' << wrap_with_quote(@property_flush[:description]) if @property_flush[:description]
       options << '--feed' <<  wrap_with_quote(@property_flush[:feed]) if @property_flush[:feed]
-      options << '--serve-http' <<  @property_flush[:serve_https] if @property_flush[:server_https]
+      options << '--serve-http' <<  @property_flush[:serve_https] if @property_flush[:serve_https]
       options << '--serve-https' <<  @property_flush[:serve_https] if  @property_flush[:sever_http]
     end
     Puppet.debug("flush with command options :#{options.join(' ')}")
@@ -168,16 +170,21 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
   end
 
   def repo_create_cmd()
-    repo_create=[command(:pulpadmin), "#{@resources[:type]}", "repo", "create" , "--repo-id", "#{@resources[:id]}" ]
-    if @resources[:feed]
-      repo_create = repoo_create + ["--feed", "#{@resources[:feed]}"]
+    Puppet.debug("generate create command #{self.resource['type']}")
+    repo_create=[command(:pulpadmin), "#{self.resource['type']}", "repo", "create" , "--repo-id", "#{self.resource['id']}" ]
+    Puppet.debug("repo_create = #{repo_create}") 
+    if self.resource['feed']
+      repo_create = repo_create + ["--feed", wrap_with_quote(self.resource['feed'])]
     end
-    if @resources[:serve_http]
-      repo_create = repoo_create + ["--server-http", "#{@resources[:serve_http]}"]
+    if self.resource['serve_http']
+      repo_create = repo_create + ["--serve-http", wrap_with_quote(self.resource['serve_http'])]
     end
-    if @resources[:serve_https]
-      repo_create = repoo_create + ["--server-https", "#{@resources[:serve_https]}"]
+    if self.resource['serve_https']
+      repo_create = repo_create + ["--serve-https", wrap_with_quote(self.resource['serve_https'])]
     end
+    repo_create << "--display_name" <<  wrap_with_quote(self.resource['display_name']) if self.resource['display_name']
+    repo_create << "--description" << wrap_with_quote(self.resource['description']) if self.resource['description']
+    Puppet.debug("repo_create = #{repo_create}")
     repo_create
   end
 
@@ -210,7 +217,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
 
   def self.get_auth_credetials
     admin_conf=File.expand_path("~/.pulp/admin.conf")
-    admin_ini = Puppet::Util::IniConfig::PhysicalFile.new(admin_conf)
+    admin_ini = Puppet::Util::IniConfig::PhysicalFile.new(admin_conf, ":")
     admin_ini.read
     cred ={}
     if (auth = admin_ini.get_section('auth'))
@@ -266,6 +273,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
   end
   
   def wrap_with_quote(param)
-    new_param= '"'+param+'"'
+    Puppet.debug("wrap #{param} with quote")
+    new_param= "\"#{param.to_s}\""
   end
 end
