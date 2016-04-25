@@ -26,14 +26,14 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
     repos =[]
     Puppet.debug("#{repo_list_cmd}.join(' ')")
     output = execute(repo_list_cmd).to_s
-    Puppet.debug("output class #{output.class} value: #{output}")
+    Puppet.debug("output class #{output.class} value: #{output.to_json}")
     repo_json= JSON.parse(output)
     #An array returned
     repo_json.each do |repo|
-      Puppet.debug("repo : #{repo} id: #{repo['id']}")
+      Puppet.debug("repo : #{repo.to_json}")
       data_hash ={}
       data_hash[:id] = repo['id']
-      data_hash[:display_name] = repo['display_name']
+      data_hash[:name] = repo['display_name']
       data_hash[:description] = repo['description']
       Puppet.debug("check importers")
       if repo['importers']
@@ -56,14 +56,16 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
       data_hash[:provider] = self.name
       repos << data_hash unless data_hash.empty?
     end
-    Puppet.debug("repos : #{repos}")
+    Puppet.debug("repos : #{repos.to_json}")
     repos
-    rescue Puppet::ExecutionFailure => details
-      raise Puppet::Error, "Cannot get repo list #{details}"
+  rescue Puppet::ExecutionFailure => details
+    raise Puppet::Error, "Cannot get repo list #{details}"
   end
 
   def self.prefetch(repos)
+    Puppet.debug("prefetch #{repos}")
     instances.each do |prov|
+      Puppet.debug("prov name : #{prov}")
       if r = repos[prov.name]
         r.provider = prov
       end
@@ -75,9 +77,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
   end
 
   def create
-
     login_get_cert
-
     execute(repo_create_cmd)
     @property_hash[:ensure] = :present
   rescue Puppet::ExecutionFailure => details
@@ -86,7 +86,6 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
 
   def destroy
     login_get_cert
-
     execute(repo_delete_cmd)
     @property_hash.clear
   rescue Puppet::ExecutionFailure => details
@@ -114,6 +113,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
   end
 
   def flush
+    Puppet.debug("flush method")
     options=[]
     if @property_flush
       options << '--display-name' << @resources[:name] if @property_flush[:name]
