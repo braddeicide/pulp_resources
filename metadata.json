@@ -8,7 +8,10 @@
   "project_page": "https://github.com/af6140/pulp_resources",
   "issues_url": "https://github.com/af6140/pulp_resources",
   "dependencies": [
-
+    {
+      "name": "puppetlabs/inifile",
+      "version_requirement": ">~ 1.4"
+    },
   ],
   "operatingsystem_support": [
     {

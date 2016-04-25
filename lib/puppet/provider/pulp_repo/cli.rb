@@ -1,7 +1,8 @@
 require 'puppet'
 require 'openssl'
-require 'puppet/util/inifile'
+require 'puppet/util/ini_file' #this is defined in puppetlabs/inifile module, with customizable key value seperator
 require 'json'
+
 
 Puppet::Type.type(:pulp_repo).provide(:cli) do
 
@@ -218,19 +219,10 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
     Puppet.debug("executing get_auth_credentials")
     admin_conf=File.expand_path("~/.pulp/admin.conf")
     Puppet.debug("admin.conf path : #{admin_conf}")
-    admin_ini = Puppet::Util::IniConfig::PhysicalFile.new(admin_conf, ':')
-    admin_ini.read
+    admin_ini = Puppet::Util::IniFile.new(admin_conf, ':')
     cred ={}
-    if (auth = admin_ini.get_section('auth'))
-      Puppet.debug("getting auth section")
-      if auth.entries.empty?
-        raise Puppet::Error, "Check ~/.pulp/admin.conf for auth config"
-      end
-      cred['username'] = auth['username']
-      cred['password'] = auth['password']
-    else
-      Puppet.debug("cannot find auth section")
-    end
+    cred['username'] = admin_ini.get_value('auth', 'username')
+    cred['password'] = admin_ini.get_value('auth', 'password')
     Puppet.debug("cred: #{cred.class} #{cred['username']}  #{cred['password']}")
     cred
   end
