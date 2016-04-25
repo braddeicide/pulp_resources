@@ -201,14 +201,13 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
   #username:
   #password:
   def self.login_get_cert
-    Puppet.debug("login_get_cert")
+    Puppet.debug("executing login_get_cert")
     unless is_cert_valid?
       unless @credentials
         @credentials= get_auth_credetials
       end
       login_cmd = [command(:pulpadmin), 'login', '-u', @credentials['username'], '-p', @credentials['password']]
       Puppet.debug("execute login command #{login_cmd}, cmd class #{login_cmd.length}")
-      #output=exec()
       output = execute(login_cmd)
     end
   rescue Puppet::ExecutionFailure => details
@@ -216,16 +215,21 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
   end
 
   def self.get_auth_credetials
+    Puppet.debug("executing get_auth_credentials")
     admin_conf=File.expand_path("~/.pulp/admin.conf")
-    admin_ini = Puppet::Util::IniConfig::PhysicalFile.new(admin_conf, ":")
+    Puppet.debug("admin.conf path : #{admin_conf}")
+    admin_ini = Puppet::Util::IniConfig::PhysicalFile.new(admin_conf, ':')
     admin_ini.read
     cred ={}
     if (auth = admin_ini.get_section('auth'))
+      Puppet.debug("getting auth section")
       if auth.entries.empty?
         raise Puppet::Error, "Check ~/.pulp/admin.conf for auth config"
       end
       cred['username'] = auth['username']
       cred['password'] = auth['password']
+    else
+      Puppet.debug("cannot find auth section")
     end
     Puppet.debug("cred: #{cred.class} #{cred['username']}  #{cred['password']}")
     cred
@@ -236,7 +240,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
     unless @date_after
       cert_path = File.expand_path("~/.pulp/user-cert.pem")
       if !File.exist?(cert_path)
-        Puppet.debug("canot find user certificate #{cert_path}")
+        Puppet.debug("cannot find user certificate #{cert_path}")
         return false
       end
       raw_cert = File.read cert_path
