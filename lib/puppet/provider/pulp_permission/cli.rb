@@ -32,10 +32,9 @@ Puppet::Type.type(:pulp_permission).provide(:cli) do
     #An array returned
     perms_json.each do |perm|
       perm['users'].each do | user, uperm|
-        Puppet.debug("perm : #{perm.to_json}")
         data_hash ={}
         data_hash[:name] = user+':'+perm['resource']
-        data_hash[:resource] =perm['resource']
+        data_hash[:pulp_resource] =perm['resource']
         data_hash[:permissions] = normalize_perms(uperm)
         data_hash[:provider] = self.name
         data_hash[:ensure] = :present
@@ -49,17 +48,25 @@ Puppet::Type.type(:pulp_permission).provide(:cli) do
     raise Puppet::Error, "Cannot get perm list #{details}"
   end
 
-  def self.prefetch(perms)
+  def self.prefetch(resources)
     Puppet.debug("prefetch")
-    instances.each do |prov|
-      Puppet.debug("prov name : #{prov}")
-      if r = perms[prov.name]
-        r.provider = prov
-      end
+    perms=instances
+    # instances.each do |prov|
+    #   Puppet.debug("prov name : #{prov.to_json}")
+    #   if r = perms[prov.name]
+    #     r.provider = prov
+    #   end
+    # end
+    resources.keys.each do |name|
+        Puppet.debug("name: #{name} #{resources[name]['pulp_resource']}")
+        if provider = perms.find{|perm| perm.name ==name + ':'+ resources[name]['pulp_resource'] }
+          resources[name].provider = provider
+        end
     end
   end
 
   def exists?
+    Puppet.debug("checking resource exists :#{@property_hash[:name]}")
     @property_hash[:ensure] == :present
   end
 
@@ -89,8 +96,8 @@ Puppet::Type.type(:pulp_permission).provide(:cli) do
 
   #property permssions
   def permissions=(value)
-    Puppet.debug("permission set to :#{value}")
-    @property_flush[:permissions] = permissions
+    Puppet.debug("permission set to :#{value.join(' ')} of class #{value.class}")
+    @property_flush[:permissions] = value
   end
 
   def flush
@@ -98,17 +105,20 @@ Puppet::Type.type(:pulp_permission).provide(:cli) do
     Puppet.debug("flush method, existing resource is #{resource}")
     deleted_perms=[]
     added_perms=[]
-    perm_resource = @property_hash[:resource]
+    perm_resource = @property_hash[:pulp_resource]
     if @property_flush && @property_flush[:permissions]
+      Puppet.debug("@property_hash[:permissions]= #{@property_hash[:permissions].length}")
+      Puppet.debug("@property_flush[:permissions]= #{@property_flush[:permissions].length}")
       deleted_perms=@property_hash[:permissions] - @property_flush[:permissions]
+      Puppet.debug("deleted_perms : #{deleted_perms}")
       added_perms=@property_flush[:permissions] - @property_hash[:permissions]
+      Puppet.debug("added_perms : #{added_perms}")
     end
-    Puppet.debug("flush with command options :#{options.join(' ')}")
-    perm_update(@property_hash[:name], perm_resource, added_perms, deleted_perms)
+    perm_update(@property_hash[:name].split(':')[0], perm_resource, added_perms, deleted_perms)
   end
 
   def perm_create_cmd(perms)
-    perm_create=[command(:pulpadmin), 'auth', 'permisison', 'grant',  "--login", self.resource['name'], '--resource', self.resource['resource']]
+    perm_create=[command(:pulpadmin), 'auth', 'permisison', 'grant',  "--login", self.resource['name'], '--resource', self.resource['pulp_resource']]
     perms.each do |perm|
       perm_create <<  '-o' << perm.upcase
     end
@@ -117,7 +127,7 @@ Puppet::Type.type(:pulp_permission).provide(:cli) do
   end
 
   def perm_revoke_cmd(perms)
-    perm_revoke=[command(:pulpadmin), 'auth', 'permission', "remoke",  "--login", @property_hash[:name], '--resource', self.resource['resource']]
+    perm_revoke=[command(:pulpadmin), 'auth', 'permission', "remoke",  "--login", @property_hash[:name], '--resource', self.resource['pulp_resource']]
     perms.each do |perm|
       perm_revoke <<  '-o' << perm.upcase
     end
@@ -125,15 +135,15 @@ Puppet::Type.type(:pulp_permission).provide(:cli) do
     perm_revoke
   end
 
-  def perm_update(user, resource, added_perms, deleted_perms)
+  def perm_update(user, pulp_resource, added_perms, deleted_perms)
     added_perms.each do |perm|
-      cmd=[command(:pulpadmin), 'auth', 'perms',  "grant", "--login", user, '--resource', resource]
+      cmd=[command(:pulpadmin), 'auth', 'permission',  "grant", "--login", user, '--resource', pulp_resource]
       cmd << '-o' << perm.upcase
       Puppet.debug("grant permissions: #{cmd.join(' ')}")
       execute(cmd)
     end
     deleted_perms.each do |perm|
-      cmd=[command(:pulpadmin), 'auth', 'perms',  "revoke", "--login", user, '--resource', resource]
+      cmd=[command(:pulpadmin), 'auth', 'permission',  "revoke", "--login", user, '--resource', pulp_resource]
       cmd << '-o' << perm.upcase
       Puppet.debug("revoke permissions: #{cmd.join(' ')}")
       execute(cmd)
@@ -144,7 +154,7 @@ Puppet::Type.type(:pulp_permission).provide(:cli) do
   #username:
   #password:
   def self.login_get_cert
-    Puppet.debug("executing login_get_cert")
+    Puppet.debug("executing login_get_cert, invoked by #{caller[0]}")
     unless is_cert_valid?
       unless @credentials
         @credentials= get_auth_credetials
@@ -213,6 +223,6 @@ Puppet::Type.type(:pulp_permission).provide(:cli) do
   def self.normalize_perms(perms)
     perms=[perms] unless perms.is_a?(Array)
     perms=perms.compact #get rid of new
-    perms=perms.map(&:downcase).sort
+    perms=perms.map(&:upcase).sort
   end
 end

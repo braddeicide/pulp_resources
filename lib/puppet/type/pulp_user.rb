@@ -30,9 +30,6 @@ Puppet::Type.newtype(:pulp_user) do
 
   newproperty(:roles, :array_matching => :all) do
     desc "user roles"
-    validate do |values|
-      values = [values] unless values.is_a?(Array)
-    end
     munge do |value|
       value.sort
     end
@@ -40,7 +37,6 @@ Puppet::Type.newtype(:pulp_user) do
       Puppet.debug("user roles current: #{is}, should : #{should}")
       cmp_is =is.sort.join(',')
       cmp_should=should.sort.join(',')
-
       return cmp_is == cmp_should
     end
   end

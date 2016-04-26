@@ -25,24 +25,23 @@ Puppet::Type.newtype(:pulp_permission) do
     isnamevar
   end
 
-  newparam(:resource) do
+  newparam(:pulp_resource) do
     isnamevar #part of the name
     desc "target resource"
   end
 
   newproperty(:permissions, :array_matching => :all) do
     desc "user roles"
-    validate do |values|
-      values = [values] unless values.is_a?(Array)
-      raise ArgumentError, "permissions cannot be empty" if values.empty?
+    validate do |value|
+      raise ArgumentError unless value.is_a?(String) and ["CREATE", "READ", "UPDATE", "EXECUTE", "DELETE"].include?(value.upcase)
     end
     munge do |value|
-      value=[value] unless value.is_a?(Array)
-      value=value.map(&:upcase)
-      value.sort
+      Puppet.debug("munge value: #{value.upcase}")
+      #value=value.upcase
+      value.upcase
     end
     def insync?(is)
-      Puppet.debug("permissions current: #{is}, should : #{should}")
+      Puppet.debug("permissions current: #{is.join(',')}, should : #{should.join(',')}")
       cmp_is = is.sort.join(',')
       cmp_should = should.sort.join(',')
       return cmp_is == cmp_should
@@ -58,23 +57,16 @@ Puppet::Type.newtype(:pulp_permission) do
         /^(.*):([a-z0-9]:(\/|\\).*)$/i,
         [
             [ :name, identity ],
-            [ :resource, identity ]
+            [ :pulp_resource, identity ]
         ]
       ],
       [
         /^(.*):(.*)$/,
         [
           [ :name, identity ],
-          [ :resource, identity ]
+          [ :pulp_resource, identity ]
         ]
       ]
     ]
   end
-
-  validate do
-    # if value(:name) == 'admin'
-    #   raise ArgumentError, "default amdin user permssion can not be changed"
-    # end
-  end
-
 end
