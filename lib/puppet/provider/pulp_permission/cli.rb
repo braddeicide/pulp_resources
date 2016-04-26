@@ -48,6 +48,7 @@ Puppet::Type.type(:pulp_permission).provide(:cli) do
     raise Puppet::Error, "Cannot get perm list #{details}"
   end
 
+  # notice the difference of compsite namevalur
   def self.prefetch(resources)
     Puppet.debug("prefetch")
     perms=instances
