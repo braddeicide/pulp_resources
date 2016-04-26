@@ -68,6 +68,7 @@ Puppet::Type.newtype(:pulp_user) do
     end
 
     def insync?(is)
+      Puppet.info("User password is only set up when user created, not checked or modified afterwards.")
       return provider.exists?
     end
   end
