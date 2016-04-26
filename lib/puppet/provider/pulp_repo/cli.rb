@@ -161,7 +161,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
     if @property_flush
       options << '--display-name' <<  @property_flush[:display_name] if @property_flush[:display_name]
       options << '--description' << @property_flush[:description] if @property_flush[:description]
-      options << '--feed' <<  @property_flush[:feed]) if @property_flush[:feed]
+      options << '--feed' <<  @property_flush[:feed] if @property_flush[:feed]
       options << '--serve-http' <<  @property_flush[:serve_https] if @property_flush[:serve_https]
       options << '--serve-https' <<  @property_flush[:serve_https] if  @property_flush[:sever_http]
     end
