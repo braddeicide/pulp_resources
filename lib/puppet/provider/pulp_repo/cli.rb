@@ -9,6 +9,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
   desc "Manage pulp repo with command line utilities"
   commands :pulpadmin => 'pulp-admin'
   commands :curl => 'curl'
+  commands :grep => 'grep'
 
   def initialize(value={})
     super(value)
@@ -142,6 +143,10 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
     @property_flush[:feed] = value
   end
 
+  def type=()
+    #do not change type for a repo after it's created
+  end
+
   def serve_http=(value)
     @property_flush[:serve_http] = value
   end
@@ -173,7 +178,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
   def repo_create_cmd()
     Puppet.debug("generate create command #{self.resource['type']}")
     repo_create=[command(:pulpadmin), "#{self.resource['type']}", "repo", "create" , "--repo-id", "#{self.resource['id']}" ]
-    Puppet.debug("repo_create = #{repo_create}") 
+    Puppet.debug("repo_create = #{repo_create}")
     if self.resource['feed']
       repo_create = repo_create + ["--feed", wrap_with_quote(self.resource['feed'])]
     end
@@ -183,7 +188,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
     if self.resource['serve_https']
       repo_create = repo_create + ["--serve-https", self.resource['serve_https']]
     end
-    repo_create << "--display_name" <<  wrap_with_quote(self.resource['display_name']) if self.resource['display_name']
+    repo_create << "--display-name" <<  wrap_with_quote(self.resource['display_name']) if self.resource['display_name']
     repo_create << "--description" << wrap_with_quote(self.resource['description']) if self.resource['description']
     Puppet.debug("repo_create = #{repo_create}")
     repo_create
@@ -250,8 +255,8 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
   end
 
   def self.get_server
-    host_output=execute(['grep', '^host', '/etc/pulp/admin/admin.conf'])
-    Puppet.debug("#{host_output}")
+    host_output=execute([command(:grep), '^host', '/etc/pulp/admin/admin.conf'])
+    Puppet.debug("grep host from admin.conf: #{host_output}")
     if !host_output.empty?
       host_spec=host_output.split(' ')
       Puppet.debug("host_spec: #{host_spec}")
@@ -267,7 +272,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
   rescue Puppet::ExecutionFailure => details
     raise Puppet::Error, "cannot get pulp server host from /etc/pulp/admin/admin.conf"
   end
-  
+
   def wrap_with_quote(param)
     Puppet.debug("wrap #{param} with quote")
     new_param= "\"#{param.to_s}\""
