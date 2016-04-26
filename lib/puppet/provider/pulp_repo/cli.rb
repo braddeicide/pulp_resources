@@ -116,15 +116,16 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
   def create
     Puppet.debug("Invoking create command #{self.resource.to_s}")
     self.class.login_get_cert
-    Puppet.debug("create with cmd: #{repo_create_cmd.join(' ')}")
-    execute(repo_create_cmd)
+    cmd = repo_delete_cmd
+    Puppet.debug("create with cmd: #{cmd.join(' '))}")
+    execute(cmd)
     @property_hash[:ensure] = :present
   rescue Puppet::ExecutionFailure => details
     raise Puppet::Error, "Cannot create repo : #{repo_create_cmd.join(' ')}, details: #details"
   end
 
   def destroy
-    login_get_cert
+    self.class.login_get_cert
     execute(repo_delete_cmd)
     @property_hash.clear
   rescue Puppet::ExecutionFailure => details
@@ -190,7 +191,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
   end
 
   def repo_delete_cmd()
-    [command(:pulpadmin), @resources[:type], "repo", "delete", "--bg", "--repo-id", @resources[:id]]
+    [command(:pulpadmin), @property_hash[:type], "repo", "delete", "--bg", "--repo-id", @property_hash[:id]]
   end
 
   def repo_update_cmd(options)
