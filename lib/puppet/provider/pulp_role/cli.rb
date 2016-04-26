@@ -108,34 +108,15 @@ Puppet::Type.type(:pulp_role).provide(:cli) do
     end
   end
 
-  def change_roles(user, added_roles, deleted_roles)
-    add_cmd =user_role_cmd(user, true)
-    remove_cmd =user_role_cmd(user, false)
-
-    unless added_roles.empty?
-      add_role = added_roles.each do |role|
-         cmd = add_cmd.dup << '--role-id' << role
-         execute(cmd)
-      end
-    end
-
-    unless deleted_roles.empty?
-      remove_role = deleted_roles.each do |role|
-         cmd = remove_cmd.dup << '--role-id' << role
-         execute(cmd)
-      end
-    end
-  end
-
-  def user_create_cmd()
-    user_create=[command(:pulpadmin), 'auth', 'role', 'create',  "--role-id", self.resource['role']]
-    user_create <<  '--display_name' << self.resource['display_name']  if self.resource['display_name']
-    user_create <<  '--description' << self.resource['description']  if self.resource['description']
+  def role_create_cmd()
+    role_create=[command(:pulpadmin), 'auth', 'role', 'create',  "--role-id", self.resource['role']]
+    role_create <<  '--display_name' << self.resource['display_name']  if self.resource['display_name']
+    role_create <<  '--description' << self.resource['description']  if self.resource['description']
     Puppet.debug("user_create = #{user_create}")
-    user_create
+    role_create
   end
 
-  def user_delete_cmd()
+  def role_delete_cmd()
     [command(:pulpadmin), 'auth', 'role', "delete",  "--role-id", @property_hash[:role]]
   end
 
