@@ -159,9 +159,9 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
     Puppet.debug("flush method, existing resource is #{resource}")
     options=[]
     if @property_flush
-      options << '--display-name' <<  wrap_with_quote(@property_flush[:display_name]) if @property_flush[:display_name]
-      options << '--description' << wrap_with_quote(@property_flush[:description]) if @property_flush[:description]
-      options << '--feed' <<  wrap_with_quote(@property_flush[:feed]) if @property_flush[:feed]
+      options << '--display-name' <<  @property_flush[:display_name] if @property_flush[:display_name]
+      options << '--description' << @property_flush[:description] if @property_flush[:description]
+      options << '--feed' <<  @property_flush[:feed]) if @property_flush[:feed]
       options << '--serve-http' <<  @property_flush[:serve_https] if @property_flush[:serve_https]
       options << '--serve-https' <<  @property_flush[:serve_https] if  @property_flush[:sever_http]
     end
@@ -179,17 +179,12 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
     Puppet.debug("generate create command #{self.resource['type']}")
     repo_create=[command(:pulpadmin), "#{self.resource['type']}", "repo", "create" , "--repo-id", "#{self.resource['id']}" ]
     Puppet.debug("repo_create = #{repo_create}")
-    if self.resource['feed']
-      repo_create = repo_create + ["--feed", wrap_with_quote(self.resource['feed'])]
-    end
-    if self.resource['serve_http']
-      repo_create = repo_create + ["--serve-http", self.resource['serve_http']]
-    end
-    if self.resource['serve_https']
-      repo_create = repo_create + ["--serve-https", self.resource['serve_https']]
-    end
-    repo_create << "--display-name" <<  wrap_with_quote(self.resource['display_name']) if self.resource['display_name']
-    repo_create << "--description" << wrap_with_quote(self.resource['description']) if self.resource['description']
+
+    repo_create << "--feed" <<  self.resource['feed'] if self.resource['feed']
+    repo_create << "--serve-http" <<  self.resource['serve_http'] if self.resource['serve_http']
+    repo_create << "--serve-https" <<  self.resource['serve_https'] if self.resource['serve_https']
+    repo_create << "--display-name" <<  self.resource['display_name'] if self.resource['display_name']
+    repo_create << "--description" <<  self.resource['description'] if self.resource['description']
     Puppet.debug("repo_create = #{repo_create}")
     repo_create
   end
@@ -271,10 +266,5 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
     end
   rescue Puppet::ExecutionFailure => details
     raise Puppet::Error, "cannot get pulp server host from /etc/pulp/admin/admin.conf"
-  end
-
-  def wrap_with_quote(param)
-    Puppet.debug("wrap #{param} with quote")
-    new_param= "\"#{param.to_s}\""
   end
 end
