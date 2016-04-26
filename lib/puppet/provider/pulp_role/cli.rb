@@ -110,9 +110,9 @@ Puppet::Type.type(:pulp_role).provide(:cli) do
 
   def role_create_cmd()
     role_create=[command(:pulpadmin), 'auth', 'role', 'create',  "--role-id", self.resource['role']]
-    role_create <<  '--display_name' << self.resource['display_name']  if self.resource['display_name']
+    role_create <<  '--display-name' << self.resource['display_name']  if self.resource['display_name']
     role_create <<  '--description' << self.resource['description']  if self.resource['description']
-    Puppet.debug("user_create = #{user_create}")
+    Puppet.debug("role_create = #{role_create}")
     role_create
   end
 
