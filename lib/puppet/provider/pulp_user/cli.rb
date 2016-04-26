@@ -88,6 +88,7 @@ Puppet::Type.type(:pulp_user).provide(:cli) do
   end
 
   def roles=(value)
+    Puppet.debug("user roles set to :#{value}")
     @property_flush[:roles] = value
   end
 
@@ -153,9 +154,9 @@ Puppet::Type.type(:pulp_user).provide(:cli) do
     [command(:pulpadmin), 'auth', 'user', "delete",  "--login", @property_hash[:login]]
   end
 
-  def user_update_cmd()
-    Puppet.debug("type :#{@property_hash}")
-    [command(:pulpadmin), 'auth', 'user',  "update", "--login", @property_hash[:id] ]+options
+  def user_update_cmd(options)
+    Puppet.debug("generate user update command  :#{@property_hash}")
+    [command(:pulpadmin), 'auth', 'user',  "update", "--login", @property_hash[:login] ]+options
   end
   #assume user have ~/.pulp/admin setup with auth username and password
   #[auth]
