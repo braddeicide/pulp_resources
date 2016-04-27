@@ -18,9 +18,8 @@ Puppet::Type.newtype(:pulp_role) do
     defaultto :present
   end
 
-  newparam(:role) do
-    desc 'The name to identify the entry for resource permission in format login:roleid'
-    isnamevar
+  newparam(:role, :namevar => true) do
+    desc 'The name to identify the entry for resource permission in format login:roleid'    
   end
 
   newproperty(:display_name) do

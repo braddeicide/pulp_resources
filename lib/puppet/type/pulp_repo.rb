@@ -19,9 +19,8 @@ Puppet::Type.newtype(:pulp_repo) do
     defaultto :present
   end
 
-  newparam(:id) do
-    desc "uniquely identifies the repo; only alphanumeric, ., -, and _ allowed"
-    isnamevar
+  newparam(:id, :namevar => true) do
+    desc "uniquely identifies the repo; only alphanumeric, ., -, and _ allowed"    
   end
 
   newproperty(:type) do

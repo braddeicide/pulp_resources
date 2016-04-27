@@ -20,18 +20,17 @@ Puppet::Type.newtype(:pulp_role_permission) do
     defaultto :present
   end
 
-  newparam(:name) do
-    desc 'The name to identify the entry for resource permission with title in format roleid:resource'
-    isnamevar
+  #This is the role-id
+  newparam(:name, :namevar=> true) do
+    desc 'The name to identify the entry for resource permission with title in format roleid:resource'    
   end
 
-  newparam(:pulp_resource) do
-    isnamevar #part of the name
+  newparam(:pulp_resource, :namevar=> true) do    
     desc "target resource"
   end
 
   newproperty(:permissions, :array_matching => :all) do
-    desc "user roles"
+    desc "role permissions"
     validate do |value|
       raise ArgumentError unless value.is_a?(String) and ["CREATE", "READ", "UPDATE", "EXECUTE", "DELETE"].include?(value.upcase)
     end
@@ -69,4 +68,9 @@ Puppet::Type.newtype(:pulp_role_permission) do
       ]
     ]
   end
+  
+  autorequire(:pulp_role) do
+    self[:name]
+  end
+
 end

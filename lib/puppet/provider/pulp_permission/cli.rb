@@ -6,7 +6,7 @@ require 'json'
 
 Puppet::Type.type(:pulp_permission).provide(:cli) do
 
-  desc "Manage pulp user with command line utilities"
+  desc "Manage pulp user permission with command line utilities"
   commands :pulpadmin => 'pulp-admin'
   commands :curl => 'curl'
   commands :grep => 'grep'
@@ -21,7 +21,7 @@ Puppet::Type.type(:pulp_permission).provide(:cli) do
   def self.instances
     login_get_cert
     pulp_server=get_server
-    Puppet.debug("Retrive all users from #{pulp_server}")
+    Puppet.debug("Retrieve all users from #{pulp_server}")
     cert_path = File.expand_path("~/.pulp/user-cert.pem")
     perm_list_cmd = [command(:curl),  '-s', '-k', '--cert' , cert_path,  "https://#{pulp_server}/pulp/api/v2/permissions/"]
     perms =[]
@@ -51,13 +51,7 @@ Puppet::Type.type(:pulp_permission).provide(:cli) do
   # notice the difference of compsite namevalur
   def self.prefetch(resources)
     Puppet.debug("prefetch")
-    perms=instances
-    # instances.each do |prov|
-    #   Puppet.debug("prov name : #{prov.to_json}")
-    #   if r = perms[prov.name]
-    #     r.provider = prov
-    #   end
-    # end
+    perms=instances   
     resources.keys.each do |name|
         Puppet.debug("name: #{name} #{resources[name]['pulp_resource']}")
         if provider = perms.find{|perm| perm.name ==name + ':'+ resources[name]['pulp_resource'] }
@@ -108,8 +102,8 @@ Puppet::Type.type(:pulp_permission).provide(:cli) do
     added_perms=[]
     perm_resource = @property_hash[:pulp_resource]
     if @property_flush && @property_flush[:permissions]
-      Puppet.debug("@property_hash[:permissions]= #{@property_hash[:permissions].length}")
-      Puppet.debug("@property_flush[:permissions]= #{@property_flush[:permissions].length}")
+      Puppet.debug("@property_hash[:permissions]= #{@property_hash[:permissions]}")
+      Puppet.debug("@property_flush[:permissions]= #{@property_flush[:permissions]}")
       deleted_perms=@property_hash[:permissions] - @property_flush[:permissions]
       Puppet.debug("deleted_perms : #{deleted_perms}")
       added_perms=@property_flush[:permissions] - @property_hash[:permissions]

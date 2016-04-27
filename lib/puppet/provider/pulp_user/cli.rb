@@ -21,7 +21,7 @@ Puppet::Type.type(:pulp_user).provide(:cli) do
   def self.instances
     login_get_cert
     pulp_server=get_server
-    Puppet.debug("Retrive all users from #{pulp_server}")
+    Puppet.debug("Retrieve all users from #{pulp_server}")
     cert_path = File.expand_path("~/.pulp/user-cert.pem")
     user_list_cmd = [command(:curl),  '-s', '-k', '--cert' , cert_path,  "https://#{pulp_server}/pulp/api/v2/users/?details=true"]
     users =[]
@@ -50,8 +50,7 @@ Puppet::Type.type(:pulp_user).provide(:cli) do
 
   def self.prefetch(users)
     Puppet.debug("prefetch")
-    instances.each do |prov|
-       Puppet.debug("prov name : #{prov}")
+    instances.each do |prov|       
        if r = users[prov.name]
          r.provider = prov
        end
@@ -115,22 +114,22 @@ Puppet::Type.type(:pulp_user).provide(:cli) do
       cmd=user_update_cmd(options)
       Puppet.debug("user update cmd :#{cmd}")
       execute(cmd)
-    end
-    change_roles(@property_hash[:login], added_roles, deleted_roles)
+      change_roles(@property_hash[:login], added_roles, deleted_roles)
+    end    
   end
 
   def change_roles(user, added_roles, deleted_roles)
     add_cmd =user_role_cmd(user, true)
     remove_cmd =user_role_cmd(user, false)
-
-    unless added_roles.empty?
+    Puppet.debug("added_roles : #{added_roles}, deleted_roles: #{deleted_roles}")
+    unless !added_roles || added_roles.empty?
       add_role = added_roles.each do |role|
          cmd = add_cmd.dup << '--role-id' << role
          execute(cmd)
       end
     end
 
-    unless deleted_roles.empty?
+    unless !deleted_roles || deleted_roles.empty?
       remove_role = deleted_roles.each do |role|
          cmd = remove_cmd.dup << '--role-id' << role
          execute(cmd)

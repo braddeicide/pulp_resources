@@ -21,7 +21,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
   def self.instances
     login_get_cert
     pulp_server=get_server
-    Puppet.debug("Retrive all repos from #{pulp_server}")
+    Puppet.debug("Retrieve all repos from #{pulp_server}")
     cert_path = File.expand_path("~/.pulp/user-cert.pem")
     repo_list_cmd = [command(:curl),  '-s', '-k', '--cert' , cert_path,  "https://#{pulp_server}/pulp/api/v2/repositories/?details=true"]
     repos =[]
@@ -82,15 +82,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
       data_hash[:ensure] = :present
 
 
-      Puppet.debug("data_hash #{data_hash.to_json}")
-      # prov=new(
-      #   :id => data_hash[:id],
-      #   :display_name => data_hash[:display_name],
-      #   :description => data_hash[:description],
-      #   :serve_http => data_hash[:serve_http],
-      #   :serve_https => data_hash[:serve_https],
-      #   :ensure => :present
-      # )
+      Puppet.debug("data_hash #{data_hash.to_json}")     
       repos << new(data_hash) unless data_hash.empty?
     end
     Puppet.debug("repos : #{repos.to_json}")
@@ -101,8 +93,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
 
   def self.prefetch(repos)
     Puppet.debug("prefetch #{repos}")
-    instances.each do |prov|
-       Puppet.debug("prov name : #{prov}")
+    instances.each do |prov|       
        if r = repos[prov.name]
          r.provider = prov
        end

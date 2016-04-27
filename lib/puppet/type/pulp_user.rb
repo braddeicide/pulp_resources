@@ -19,9 +19,8 @@ Puppet::Type.newtype(:pulp_user) do
     defaultto :present
   end
 
-  newparam(:login) do
-    desc "uniquely identifies the repo; only alphanumeric, ., -, and _ allowed"
-    isnamevar
+  newparam(:login, :namevar => true) do
+    desc "uniquely identifies the repo; only alphanumeric, ., -, and _ allowed"    
   end
 
   newproperty(:display_name) do
@@ -29,10 +28,7 @@ Puppet::Type.newtype(:pulp_user) do
   end
 
   newproperty(:roles, :array_matching => :all) do
-    desc "user roles"
-    munge do |value|
-      value.sort
-    end
+    desc "user roles"   
     def insync?(is)
       Puppet.debug("user roles current: #{is}, should : #{should}")
       cmp_is =is.sort.join(',')
@@ -67,6 +63,17 @@ Puppet::Type.newtype(:pulp_user) do
       Puppet.info("User password is only set up when user created, not checked or modified afterwards.")
       return provider.exists?
     end
+  end
+  
+  #how to auto require multiple resources
+  autorequire(:pulp_role) do
+    autos =[]
+    unless !self[:roles] || self[:roles].empty?
+      self[:roles].each do |role_id|
+        autos<< role_id
+      end
+    end
+    autos
   end
 
 end

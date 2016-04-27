@@ -1,6 +1,6 @@
 {
   "name": "af6140-pulp_resources",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "author": "af6140",
   "summary": "Pulp resources",
   "license": "Apache-2.0",
@@ -11,7 +11,7 @@
     {
       "name": "puppetlabs/inifile",
       "version_requirement": ">~ 1.4"
-    },
+    }
   ],
   "operatingsystem_support": [
     {

@@ -20,13 +20,12 @@ Puppet::Type.newtype(:pulp_permission) do
     defaultto :present
   end
 
-  newparam(:name) do
-    desc 'The name to identify the entry for resource permission in format login:resource'
-    isnamevar
+  #this is the login/user in pulp
+  newparam(:name, :namevar => true) do
+    desc 'The name to identify the entry for resource permission in format login:resource'    
   end
 
-  newparam(:pulp_resource) do
-    isnamevar #part of the name
+  newparam(:pulp_resource, :namevar => true) do    
     desc "target resource"
   end
 
@@ -68,5 +67,9 @@ Puppet::Type.newtype(:pulp_permission) do
         ]
       ]
     ]
+  end
+  
+  autorequire(:pulp_user) do
+    self[:name]
   end
 end

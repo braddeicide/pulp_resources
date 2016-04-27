@@ -50,8 +50,7 @@ Puppet::Type.type(:pulp_role).provide(:cli) do
 
   def self.prefetch(roles)
     Puppet.debug("prefetch")
-    instances.each do |prov|
-       Puppet.debug("prov name : #{prov}")
+    instances.each do |prov|      
        if r = roles[prov.name]
          r.provider = prov
        end
