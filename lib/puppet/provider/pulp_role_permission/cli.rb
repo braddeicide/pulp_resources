@@ -4,7 +4,7 @@ require 'puppet/util/ini_file' #this is defined in puppetlabs/inifile module, wi
 require 'json'
 
 
-Puppet::Type.type(:pulp_permission).provide(:cli) do
+Puppet::Type.type(:pulp_role_permission).provide(:cli) do
 
   desc "Manage pulp user with command line utilities"
   commands :pulpadmin => 'pulp-admin'
@@ -23,19 +23,20 @@ Puppet::Type.type(:pulp_permission).provide(:cli) do
     pulp_server=get_server
     Puppet.debug("Retrive all users from #{pulp_server}")
     cert_path = File.expand_path("~/.pulp/user-cert.pem")
-    perm_list_cmd = [command(:curl),  '-s', '-k', '--cert' , cert_path,  "https://#{pulp_server}/pulp/api/v2/permissions/"]
+    role_list_cmd = [command(:curl),  '-s', '-k', '--cert' , cert_path,  "https://#{pulp_server}/pulp/api/v2/roles/"]
     perms =[]
-    Puppet.debug("#{perm_list_cmd}.join(' ')")
-    output = execute(perm_list_cmd).to_s
+    Puppet.debug("#{role_list_cmd}.join(' ')")
+    output = execute(role_list_cmd).to_s
     Puppet.debug("output class #{output.class} value: #{output.to_json}")
-    perms_json= JSON.parse(output)
+    roles_json= JSON.parse(output)
     #An array returned
-    perms_json.each do |perm|
-      perm['users'].each do | user, uperm|
+    roles_json.each do |role|
+      role_id = role['id']
+      role['permissions'].each do | r_resource, rperm|
         data_hash ={}
-        data_hash[:name] = user+':'+perm['resource']
-        data_hash[:pulp_resource] =perm['resource']
-        data_hash[:permissions] = normalize_perms(uperm)
+        data_hash[:name] = role_id+':'+r_resource
+        data_hash[:pulp_resource] =r_resource
+        data_hash[:permissions] = normalize_perms(rperm)
         data_hash[:provider] = self.name
         data_hash[:ensure] = :present
         Puppet.debug("data_hash #{data_hash.to_json}")
@@ -45,19 +46,13 @@ Puppet::Type.type(:pulp_permission).provide(:cli) do
     Puppet.debug("perms : #{perms.to_json}")
     perms
   rescue Puppet::ExecutionFailure => details
-    raise Puppet::Error, "Cannot get perm list #{details}"
+    raise Puppet::Error, "Cannot get role perm list #{details}"
   end
 
   # notice the difference of compsite namevalur
   def self.prefetch(resources)
     Puppet.debug("prefetch")
     perms=instances
-    # instances.each do |prov|
-    #   Puppet.debug("prov name : #{prov.to_json}")
-    #   if r = perms[prov.name]
-    #     r.provider = prov
-    #   end
-    # end
     resources.keys.each do |name|
         Puppet.debug("name: #{name} #{resources[name]['pulp_resource']}")
         if provider = perms.find{|perm| perm.name ==name + ':'+ resources[name]['pulp_resource'] }
@@ -73,10 +68,12 @@ Puppet::Type.type(:pulp_permission).provide(:cli) do
 
   def create
     self.class.login_get_cert
+    Puppet.debug("pepare perm_create_cmd")
     cmd =perm_create_cmd
     Puppet.debug("create with cmd: #{perm_create_cmd.join(' ')}")
     execute(cmd)
     @property_hash[:ensure] = :present
+
   rescue Puppet::ExecutionFailure => details
     raise Puppet::Error, "Cannot create user permission: #{cmd.join(' ')}, details: #{details}"
   end
@@ -117,25 +114,29 @@ Puppet::Type.type(:pulp_permission).provide(:cli) do
     end
     unless @property_flush.empty?
       name_spec = @property_hash[:name]
-      user = name_spec.split(':')[0]
-      perm_update(user, perm_resource, added_perms, deleted_perms)
+      Puppet.debug("name_spec: #{name_spec}")
+      perm_update(@property_hash[:name].split(':')[0], perm_resource, added_perms, deleted_perms)
     end
   end
 
   def perm_create_cmd()
+    Puppet.debug("perm_create_cmd")
     perms = self.class.normalize_perms(self.resource['permissions'])
-    perm_create=[command(:pulpadmin), 'auth', 'permission', 'grant',  "--login", self.resource['name'], '--resource', self.resource['pulp_resource']]
-    perms.each do |perm|
-      perm_create <<  '-o' << perm.upcase
+    unless perms.empty?
+      perm_create=[command(:pulpadmin), 'auth', 'permission', 'grant',  "--role-id", self.resource['name'], '--resource', self.resource['pulp_resource']]
+      perms.each do |perm|
+        perm_create <<  '-o' << perm.upcase
+      end
     end
     Puppet.debug("perm_create = #{perm_create}")
     perm_create
   end
 
   def perm_revoke_cmd(perms)
-    name_spec = @property_hash[:name]
-    user = name_spec.split(':')[0]
-    perm_revoke=[command(:pulpadmin), 'auth', 'permission', "revoke",  "--login", user, '--resource', self.resource['pulp_resource']]
+    name_spec =@property_hash[:name]
+    role_id = name_spec.split(':')[0]
+    Puppet.debug("name_spec: #{@property_hash[:name]}")
+    perm_revoke=[command(:pulpadmin), 'auth', 'permission', "revoke",  "--role-id", role_id, '--resource', self.resource['pulp_resource']]
     perms.each do |perm|
       perm_revoke <<  '-o' << perm.upcase
     end
@@ -143,15 +144,15 @@ Puppet::Type.type(:pulp_permission).provide(:cli) do
     perm_revoke
   end
 
-  def perm_update(user, pulp_resource, added_perms, deleted_perms)
+  def perm_update(role, pulp_resource, added_perms, deleted_perms)
     added_perms.each do |perm|
-      cmd=[command(:pulpadmin), 'auth', 'permission',  "grant", "--login", user, '--resource', pulp_resource]
+      cmd=[command(:pulpadmin), 'auth', 'permission',  "grant", "--role-id", role, '--resource', pulp_resource]
       cmd << '-o' << perm.upcase
       Puppet.debug("grant permissions: #{cmd.join(' ')}")
       execute(cmd)
     end
     deleted_perms.each do |perm|
-      cmd=[command(:pulpadmin), 'auth', 'permission',  "revoke", "--login", user, '--resource', pulp_resource]
+      cmd=[command(:pulpadmin), 'auth', 'permission',  "revoke", "--role-id", role, '--resource', pulp_resource]
       cmd << '-o' << perm.upcase
       Puppet.debug("revoke permissions: #{cmd.join(' ')}")
       execute(cmd)
