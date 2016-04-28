@@ -109,3 +109,24 @@ pulp_role {'testrole':
 }
 ```
 
+Create a pulp user permission:
+
+This resource use composite namevar. The title is spit into two parts seperated by ':', first part is the name which maps to pulp user login, the second part is the pulp resource. 
+
+```puppet
+pulp_permission {'test:/':
+  ensure => 'present',
+  permissions => ['read']
+}
+```
+
+Create a pulp role permission:
+
+It uses composite namevar. The title split into two parts seperated by ':'. The first part is the role-id, the second part is the resource.
+
+```puppet
+pulp_role_permission{'testrole:/':
+  ensure => 'present',
+  permissions => ['read']
+}
+
