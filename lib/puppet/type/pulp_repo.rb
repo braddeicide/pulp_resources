@@ -49,18 +49,29 @@ Puppet::Type.newtype(:pulp_repo) do
   	end
   end
 
-  newproperty(:serve_http) do
-  	desc "Server through http"
-  	newvalues(:true,:false)
+  newproperty(:serve_http, :parent => Puppet::Property::Boolean) do
+  	desc "Server through http"  	
     #pulp default value
-  	defaultto :false
+  	defaultto false
   end
 
-  newproperty(:serve_https) do
-  	desc "Server through http"
-  	newvalues(:true, :false)
+  newproperty(:serve_https, :parent => Puppet::Property::Boolean) do
+  	desc "Server through http"  	
     #pulp default value
-  	defaultto :true
+  	defaultto true
   end
 
+  # newproperty(:retain_old_count) do
+  #   validate do |value|
+  #     int = Integer(value) rescue nil
+  #     unless int raise ArgumentError, "%s is not a valid integer" % value
+  #   end    
+  #   munge do |value|
+  #     Integer(value)
+  #   end
+  # end
+  
+  newproperty(:auto_publish, :parent => Puppet::Property::Boolean )    
+    defaultto false
+  end
 end

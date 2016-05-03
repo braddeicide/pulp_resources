@@ -50,17 +50,25 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
         repo['distributors'].each do |distributor|
           if distributor['distributor_type_id'] == 'yum_distributor'
             if distributor['config']['http']
-              data_hash[:serve_http] = :true
+              data_hash[:serve_http] = true
             else
-              data_hash[:serve_http] = :false
+              data_hash[:serve_http] = false
             end
             Puppet.debug("serve_https: #{distributor['config']['https']}" )
             if distributor['config']['https']
-              data_hash[:serve_https] = :true
+              data_hash[:serve_https] = true
             else
               Puppet.debug("set serve_https to false")
-              data_hash[:serve_https] = :false
+              data_hash[:serve_https] = false
             end
+            
+            if distributor['config']['auto_publish']
+              data_hash[:serve_https] = true
+            else
+              Puppet.debug("set auto_publish to false")
+              data_hash[:serve_https] = false
+            end
+            
           end
         end
       end
@@ -135,6 +143,10 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
     @property_flush[:feed] = value
   end
 
+  def auto_publish=(value)
+    @property_flush[:auto_publish] = value
+  end
+  
   def type=()
     #do not change type for a repo after it's created
   end
@@ -156,6 +168,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
       options << '--feed' <<  @property_flush[:feed] if @property_flush[:feed]
       options << '--serve-http' <<  @property_flush[:serve_https] if @property_flush[:serve_https]
       options << '--serve-https' <<  @property_flush[:serve_https] if  @property_flush[:sever_http]
+      options << '--auto-publish' <<  @property_flush[:auto_publish] if  @property_flush[:auto_publish]
     end
     Puppet.debug("flush with command options :#{options.join(' ')}")
     unless options.empty?
@@ -177,6 +190,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
     repo_create << "--serve-https" <<  self.resource['serve_https'] if self.resource['serve_https']
     repo_create << "--display-name" <<  self.resource['display_name'] if self.resource['display_name']
     repo_create << "--description" <<  self.resource['description'] if self.resource['description']
+    repo_create << "--auto-publish" <<  self.resource['auto_publish'] if self.resource['auto_publish']
     Puppet.debug("repo_create = #{repo_create}")
     repo_create
   end
