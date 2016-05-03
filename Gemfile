@@ -30,7 +30,7 @@ group :test do
   gem 'puppet-lint-version_comparison-check',                       :require => false
   gem 'puppet-lint-classes_and_types_beginning_with_digits-check',  :require => false
   gem 'puppet-lint-unquoted_string-check',                          :require => false
-  gem 'inifile', '~> 3.0',					    :require => false
+  gem 'inifile',						    :require => false
 end
 group :acceptance_test do
   if beaker_version = ENV['BEAKER_VERSION']
@@ -50,6 +50,5 @@ else
   gem 'puppet', '~> 3.8.0', :require => false
 end
 
-gem 'inifile', '~> 3.0'
 
 # vim:ft=ruby
