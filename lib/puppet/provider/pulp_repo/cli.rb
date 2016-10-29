@@ -115,7 +115,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
   def create
     Puppet.debug("Invoking create command #{self.resource.to_s}")
     self.class.login_get_cert
-    cmd = repo_delete_cmd
+    cmd = repo_create_cmd
     Puppet.debug("create with cmd: #{cmd.join(' ')}")
     execute(cmd)
     @property_hash[:ensure] = :present
