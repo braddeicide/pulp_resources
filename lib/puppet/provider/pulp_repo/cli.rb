@@ -120,7 +120,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
     execute(cmd)
     @property_hash[:ensure] = :present
   rescue Puppet::ExecutionFailure => details
-    raise Puppet::Error, "Cannot create repo : #{repo_create_cmd.join(' ')}, details: #details"
+    raise Puppet::Error, "Cannot create repo : #{repo_create_cmd.join(' ')}, details: #{details}"
   end
 
   def destroy
