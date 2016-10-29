@@ -218,7 +218,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
       output = execute(login_cmd)
     end
   rescue Puppet::ExecutionFailure => details
-    raise Puppet::Error, "Check ~/.pulp/admin.conf for credentials, could not log in with pulpadmin: #{detail}"
+    raise Puppet::Error, "Check ~/.pulp/admin.conf for credentials, could not log in with pulpadmin: #{details}"
   end
 
   def self.get_auth_credetials
