@@ -71,7 +71,7 @@ Puppet::Type.newtype(:pulp_repo) do
   #   end
   # end
   
-  newproperty(:auto_publish, :parent => Puppet::Property::Boolean )    
+  newproperty(:auto_publish, :parent => Puppet::Property::Boolean ) do
     defaultto false
   end
 end
