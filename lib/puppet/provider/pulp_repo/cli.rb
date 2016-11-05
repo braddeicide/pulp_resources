@@ -51,23 +51,23 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
           if distributor['distributor_type_id'] == 'yum_distributor'
             Puppet.debug("serve_http: #{distributor['config']['http']}" )
             if distributor['config']['http']
-              data_hash[:serve_http] = true
+              data_hash[:serve_http] = :true
             else
-              data_hash[:serve_http] = false
+              data_hash[:serve_http] = :false
             end
             Puppet.debug("serve_https: #{distributor['config']['https']}" )
             if distributor['config']['https']
-              data_hash[:serve_https] = true
+              data_hash[:serve_https] = :true
             else
               Puppet.debug("set serve_https to false")
-              data_hash[:serve_https] = false
+              data_hash[:serve_https] = :false
             end
             
             if distributor['config']['auto_publish']
-              data_hash[:auto_publish] = true
+              data_hash[:auto_publish] = :true
             else
               Puppet.debug("set auto_publish to false")
-              data_hash[:auto_publish] = false
+              data_hash[:auto_publish] = :false
             end
             
           end
