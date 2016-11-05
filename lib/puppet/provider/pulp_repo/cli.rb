@@ -128,7 +128,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
     execute(repo_delete_cmd)
     @property_hash.clear
   rescue Puppet::ExecutionFailure => details
-    raise Puppet::Error, "Cannot delete repo : #{repo_delet_cmd}"
+    raise Puppet::Error, "Cannot delete repo : #{repo_delet_cmd}, details: #{details}"
   end
 
   def display_name=(value)
@@ -271,6 +271,6 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
       'localhost'
     end
   rescue Puppet::ExecutionFailure => details
-    raise Puppet::Error, "cannot get pulp server host from /etc/pulp/admin/admin.conf"
+    raise Puppet::Error, "cannot get pulp server host from /etc/pulp/admin/admin.conf, details: #{details}"
   end
 end

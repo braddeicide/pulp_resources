@@ -68,7 +68,7 @@ Puppet::Type.type(:pulp_role).provide(:cli) do
     execute(cmd)
     @property_hash[:ensure] = :present
   rescue Puppet::ExecutionFailure => details
-    raise Puppet::Error, "Cannot create role : #{cmd.join(' ')}, details: #details"
+    raise Puppet::Error, "Cannot create role : #{cmd.join(' ')}, details: #{details}"
   end
 
   def destroy
@@ -80,7 +80,7 @@ Puppet::Type.type(:pulp_role).provide(:cli) do
     Puppet.debug("Clearing property_hash")
     @property_hash.clear
   rescue Puppet::ExecutionFailure => details
-    raise Puppet::Error, "Cannot delete role : #{cmd}"
+    raise Puppet::Error, "Cannot delete role : #{cmd}, details: #{details}"
   end
 
   def display_name=(value)
