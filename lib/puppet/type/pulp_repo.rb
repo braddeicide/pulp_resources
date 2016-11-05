@@ -49,15 +49,17 @@ Puppet::Type.newtype(:pulp_repo) do
   	end
   end
 
-  newproperty(:serve_http, :parent => Puppet::Property::Boolean) do
-  	desc "Server through http"  	
+  newproperty(:serve_http) do
+  	desc "Server through http"
+        newvalues(true, false)
     #pulp default value
   	defaultto false
         munge { |value| super(value).to_s.intern }
   end
 
-  newproperty(:serve_https, :parent => Puppet::Property::Boolean) do
-  	desc "Server through http"  	
+  newproperty(:serve_https) do
+  	desc "Server through https"  	
+        newvalues(true, false)
     #pulp default value
   	defaultto true
         munge { |value| super(value).to_s.intern }
@@ -73,7 +75,8 @@ Puppet::Type.newtype(:pulp_repo) do
   #   end
   # end
   
-  newproperty(:auto_publish, :parent => Puppet::Property::Boolean ) do
+  newproperty(:auto_publish) do
+    newvalues(true, false)
     defaultto false
   end
 end
