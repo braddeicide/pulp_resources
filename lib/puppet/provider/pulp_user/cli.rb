@@ -67,7 +67,7 @@ Puppet::Type.type(:pulp_user).provide(:cli) do
     execute(user_create_cmd)
     @property_hash[:ensure] = :present
   rescue Puppet::ExecutionFailure => details
-    raise Puppet::Error, "Cannot create user : #{user_create_cmd.join(' ')}, details: #details"
+    raise Puppet::Error, "Cannot create user : #{user_create_cmd.join(' ')}, details: #{details}"
   end
 
   def destroy
