@@ -63,10 +63,10 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
             end
             
             if distributor['config']['auto_publish']
-              data_hash[:serve_https] = true
+              data_hash[:auto_publish] = true
             else
               Puppet.debug("set auto_publish to false")
-              data_hash[:serve_https] = false
+              data_hash[:auto_publish] = false
             end
             
           end
