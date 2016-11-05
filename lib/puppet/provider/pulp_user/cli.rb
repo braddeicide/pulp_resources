@@ -79,7 +79,7 @@ Puppet::Type.type(:pulp_user).provide(:cli) do
     Puppet.debug("Clearing property_hash")
     @property_hash.clear
   rescue Puppet::ExecutionFailure => details
-    raise Puppet::Error, "Cannot delete user : #{user_delet_cmd}"
+    raise Puppet::Error, "Cannot delete user : #{user_delet_cmd}, details: #{details}"
   end
 
   def display_name=(value)
