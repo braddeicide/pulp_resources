@@ -167,7 +167,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
       options << '--description' << @property_flush[:description] if @property_flush[:description]
       options << '--feed' <<  @property_flush[:feed] if @property_flush[:feed]
       options << '--serve-http' <<  @property_flush[:serve_http] if @property_flush[:serve_http]
-      options << '--serve-https' <<  @property_flush[:serve_https] if  @property_flush[:sever_https]
+      options << '--serve-https' <<  @property_flush[:serve_https] if  @property_flush[:serve_https]
       options << '--auto-publish' <<  @property_flush[:auto_publish] if  @property_flush[:auto_publish]
     end
     Puppet.debug("flush with command options :#{options.join(' ')}")
