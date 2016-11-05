@@ -49,6 +49,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
       if repo['distributors']
         repo['distributors'].each do |distributor|
           if distributor['distributor_type_id'] == 'yum_distributor'
+            Puppet.debug("serve_http: #{distributor['config']['http']}" )
             if distributor['config']['http']
               data_hash[:serve_http] = true
             else
