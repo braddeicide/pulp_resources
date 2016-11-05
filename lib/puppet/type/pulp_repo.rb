@@ -54,7 +54,6 @@ Puppet::Type.newtype(:pulp_repo) do
         newvalues(:true, :false)
     #pulp default value
   	defaultto :false
-        munge { |value| super(value).to_s.intern }
   end
 
   newproperty(:serve_https) do
@@ -62,7 +61,6 @@ Puppet::Type.newtype(:pulp_repo) do
         newvalues(:true, :false)
     #pulp default value
   	defaultto :true
-        munge { |value| super(value).to_s.intern }
   end
 
   # newproperty(:retain_old_count) do
