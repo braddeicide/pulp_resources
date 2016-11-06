@@ -144,9 +144,10 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
     @property_flush[:feed] = value
   end
 
-  def auto_publish=(value)
-    @property_flush[:auto_publish] = value
-  end
+  # Doesn't seem to exist as an option
+  #def auto_publish=(value)
+  #  @property_flush[:auto_publish] = value
+  #end
   
   def type=()
     #do not change type for a repo after it's created
