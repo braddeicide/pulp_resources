@@ -73,8 +73,8 @@ Puppet::Type.newtype(:pulp_repo) do
   #   end
   # end
   
-  newproperty(:auto_publish) do
-    newvalues(:true, :false)
-    defaultto :false
-  end
+  #newproperty(:auto_publish) do
+  #  newvalues(:true, :false)
+  #  defaultto :false
+  #end
 end

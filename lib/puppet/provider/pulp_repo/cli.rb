@@ -62,13 +62,13 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
               Puppet.debug("set serve_https to false")
               data_hash[:serve_https] = :false
             end
-            
-            if distributor['config']['auto_publish']
-              data_hash[:auto_publish] = :true
-            else
-              Puppet.debug("set auto_publish to false")
-              data_hash[:auto_publish] = :false
-            end
+            # auto_publish doesn't appear to exist 
+            #if distributor['config']['auto_publish']
+            #  data_hash[:auto_publish] = :true
+            #else
+            #  Puppet.debug("set auto_publish to false")
+            #  data_hash[:auto_publish] = :false
+            #end
             
           end
         end
@@ -170,7 +170,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
       options << '--feed' <<  @property_flush[:feed] if @property_flush[:feed]
       options << '--serve-http' <<  @property_flush[:serve_http] if @property_flush[:serve_http]
       options << '--serve-https' <<  @property_flush[:serve_https] if  @property_flush[:serve_https]
-      options << '--auto-publish' <<  @property_flush[:auto_publish] if  @property_flush[:auto_publish]
+      #options << '--auto-publish' <<  @property_flush[:auto_publish] if  @property_flush[:auto_publish]
     end
     Puppet.debug("flush with command options :#{options.join(' ')}")
     unless options.empty?
@@ -192,7 +192,7 @@ Puppet::Type.type(:pulp_repo).provide(:cli) do
     repo_create << "--serve-https" <<  self.resource['serve_https'] if self.resource['serve_https']
     repo_create << "--display-name" <<  self.resource['display_name'] if self.resource['display_name']
     repo_create << "--description" <<  self.resource['description'] if self.resource['description']
-    repo_create << "--auto-publish" <<  self.resource['auto_publish'] if self.resource['auto_publish']
+    #repo_create << "--auto-publish" <<  self.resource['auto_publish'] if self.resource['auto_publish']
     Puppet.debug("repo_create = #{repo_create}")
     repo_create
   end
